@@ -11,17 +11,44 @@ TRIGGER_FILES = ('.gitignore', os.path.basename(__file__))
 class GitIgnorer(sublime_plugin.EventListener):
 
     def on_post_save_async(self, view):
-        if os.path.basename(view.file_name()) in TRIGGER_FILES:
-            apply_all_ignored(view.window())
+        window = view.window()
+
+        if window is None:
+            return
+
+        file_name = view.file_name()
+
+        if (file_name == window.project_file_name()
+                or os.path.basename(file_name) in TRIGGER_FILES):
+            apply_all_ignored(window)
         else:
-            apply_single_ignored(view.window(), view.file_name())
+            apply_single_ignored(window, file_name)
+
+
+def _add_extra_excludes(folder, to_merge, excludes_type):
+    excludes_name = '{}_exclude_patterns'.format(excludes_type)
+    extra_excludes_name = 'extra_{}'.format(excludes_name)
+
+    should_migrate_folder = extra_excludes_name not in folder
+    if should_migrate_folder:
+        if excludes_name not in to_merge:
+            return False  # delay migration until actually needed
+
+        # migrate user exclude patterns
+        folder[extra_excludes_name] = folder.pop(excludes_name, [])
+
+    extra_exclude_patterns = folder[extra_excludes_name]
+    if not extra_exclude_patterns:
+        return should_migrate_folder
+
+    exclude_patterns = to_merge.get(excludes_name, [])
+
+    to_merge[excludes_name] = exclude_patterns + extra_exclude_patterns
+    return True
 
 
 def update_each_folder(inner):
     def wrapper(window, *args, **kwargs):
-        if window is None:
-            return
-
         project_data = window.project_data()
 
         if project_data is None or 'folders' not in project_data:
@@ -30,6 +57,9 @@ def update_each_folder(inner):
         changed = False
         for folder in project_data['folders']:
             to_merge = inner(folder, *args, **kwargs)
+
+            for excludes_type in ('file', 'folder'):
+                changed |= _add_extra_excludes(folder, to_merge, excludes_type)
 
             if to_merge:
                 changed = True
@@ -75,7 +105,12 @@ def apply_all_ignored(folder):
         else:
             files.add(file)
 
-    return {
-        'file_exclude_patterns': list(files),
-        'folder_exclude_patterns': list(dirs),
-    }
+    to_merge = {}
+
+    if files:
+        to_merge['file_exclude_patterns'] = list(files)
+
+    if dirs:
+        to_merge['folder_exclude_patterns'] = list(dirs)
+
+    return to_merge
