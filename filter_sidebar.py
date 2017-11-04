@@ -12,15 +12,28 @@ TRIGGER_FILES = ('.gitignore', os.path.basename(__file__))
 class GitIgnorer(sublime_plugin.EventListener):
 
     def __init__(self):
-        self._on_load()
+        self._known_windows = set()
 
-    def _on_load(self):
+        sublime.set_timeout_async(self._on_load_async, 0)
+
+    def _on_load_async(self):
         window = None
         for window in sublime.windows():
-            apply_all_ignored(window)
+            self._on_new_window_async(window)
 
         if window is None:
-            sublime.set_timeout_async(self._on_load, 50)
+            sublime.set_timeout_async(self._on_load_async, 50)
+
+    def on_new_async(self, view):
+        window = view.window()
+        if window is None or window.id() in self._known_windows:
+            return
+
+        self._known_windows.add(window.id())
+        self._on_new_window_async(window)
+
+    def _on_new_window_async(self, window):
+        apply_all_ignored(window)
 
     def on_post_save_async(self, view):
         window = view.window()
