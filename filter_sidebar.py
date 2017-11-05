@@ -2,8 +2,8 @@ import os.path
 import sublime
 import sublime_plugin
 
-from GitIgnorer.lib.gitignored import is_ignored, ignored_files
-from GitIgnorer.lib.path_utils import is_subdirectory
+from .lib.gitignored import is_ignored, ignored_files
+from .lib.path_utils import is_subdirectory
 
 
 TRIGGER_FILES = ('.gitignore', os.path.basename(__file__))
