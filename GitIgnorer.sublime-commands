@@ -1,0 +1,6 @@
+[
+  {
+    "caption": "GitIgnorer: Refresh ignored files",
+    "command": "run_git_ignorer"
+  }
+]
