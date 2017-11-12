@@ -70,7 +70,9 @@ def update_each_folder(inner):
 
         changed = False
         for folder in project_data['folders']:
-            to_merge = inner(folder, *args, **kwargs)
+            folder_path = os.path.expanduser(folder['path'])
+
+            to_merge = inner(folder_path, folder, *args, **kwargs)
 
             for excludes_type in ('file', 'folder'):
                 changed |= _add_extra_excludes(folder, to_merge, excludes_type)
@@ -86,9 +88,7 @@ def update_each_folder(inner):
 
 
 @update_each_folder
-def apply_single_ignored(folder, file_name):
-    folder_path = os.path.expanduser(folder['path'])
-
+def apply_single_ignored(folder_path, folder, file_name):
     if not is_subdirectory(os.path.dirname(file_name), folder_path):
         return {}
 
@@ -106,10 +106,8 @@ def apply_single_ignored(folder, file_name):
 
 
 @update_each_folder
-def apply_all_ignored(folder):
+def apply_all_ignored(folder_path, folder):
     dirs, files = set(), set()
-
-    folder_path = os.path.expanduser(folder['path'])
 
     for file in ignored_files(folder_path):
         file = os.path.join(folder_path, file)
