@@ -28,9 +28,22 @@ class GitIgnorer(sublime_plugin.EventListener):
 
 class RunGitIgnorerCommand(sublime_plugin.WindowCommand):
 
+    settings = sublime.load_settings('GitIgnorer.sublime-settings')
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        sublime.set_timeout_async(self.run, 0)
+        target = self.timer_run
+        if self.settings.get('run_interval') or 0 <= 0:
+            target = self.run
+
+        sublime.set_timeout_async(target, 0)
+
+    def timer_run(self):
+        self.run()
+        sublime.set_timeout_async(
+            self.timer_run,
+            self.settings.get('run_interval') * 1000
+        )
 
     def is_enabled(self):
         return self.window.project_data() is not None
@@ -71,6 +84,9 @@ def update_each_folder(inner):
         changed = False
         for folder in project_data['folders']:
             folder_path = os.path.expanduser(folder['path'])
+
+            if not os.path.exists(os.path.join(folder_path, '.git')):
+                continue
 
             to_merge = inner(folder_path, folder, *args, **kwargs)
 

@@ -1,0 +1,5 @@
+{
+    // Interval (in seconds) at which to run the plugin (additionally to events).
+    // A value less than or equal to 0 disables.
+    "run_interval": 5
+}
