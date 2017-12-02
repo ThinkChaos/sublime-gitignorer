@@ -2,5 +2,13 @@
   {
     "caption": "GitIgnorer: Refresh ignored files",
     "command": "run_git_ignorer"
+  },
+  {
+    "caption": "Preferences: GitIgnorer Settings",
+    "command": "edit_settings",
+    "args": {
+      "base_file": "${packages}/GitIgnorer/GitIgnorer.sublime-settings",
+      "default": "{\n\t$0\n}\n"
+    }
   }
 ]
