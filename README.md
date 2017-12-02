@@ -3,7 +3,7 @@
 A SublimeText 3 plugin to hide Git ignored files from the sidebar.
 
 I wrote this plugin because the [existing similar plugin][other] uses a timer to check for ignored files.  
-This plugin uses events, and a couple tricks, to be more efficient.
+This plugin uses both events and a timer to be more efficient.
 
 ## FAQ
 
@@ -25,6 +25,9 @@ GitIgnorer runs on the following events:
 
  - after saving a file
  - when the project window is first activated
+
+There is also a timer that triggers the plugin every 5 seconds by default.  
+This is configurable, and can be disabled.
 
 You can also trigger it by selecting "GitIgnorer: Refresh ignored files" in the Command Palette.
 
