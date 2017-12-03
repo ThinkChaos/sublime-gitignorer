@@ -19,8 +19,8 @@ class GitIgnorer(sublime_plugin.EventListener):
 
         file_name = view.file_name()
 
-        if (file_name == window.project_file_name()
-                or os.path.basename(file_name) in TRIGGER_FILES):
+        if (file_name == window.project_file_name() or
+                os.path.basename(file_name) in TRIGGER_FILES):
             apply_all_ignored(window)
         else:
             apply_single_ignored(window, file_name)
