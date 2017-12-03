@@ -33,17 +33,18 @@ class RunGitIgnorerCommand(sublime_plugin.WindowCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         target = self.timer_run
-        if self.settings.get('run_interval') or 0 <= 0:
+        if self.run_interval <= 0:
             target = self.run
 
         sublime.set_timeout_async(target, 0)
 
+    @property
+    def run_interval(self):
+        return self.settings.get('run_interval') or 5
+
     def timer_run(self):
         self.run()
-        sublime.set_timeout_async(
-            self.timer_run,
-            self.settings.get('run_interval') * 1000
-        )
+        sublime.set_timeout_async(self.timer_run, self.run_interval * 1000)
 
     def is_enabled(self):
         return self.window.project_data() is not None
