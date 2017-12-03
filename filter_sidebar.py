@@ -1,10 +1,13 @@
 import os.path
+import platform
 import sublime
 import sublime_plugin
 
 from .lib.gitignored import is_ignored, ignored_files
 from .lib.path_utils import is_subdirectory
 
+
+IS_WINDOWS = platform.system() == 'Windows'
 
 TRIGGER_FILES = ('.gitignore', os.path.basename(__file__))
 
@@ -53,6 +56,15 @@ class RunGitIgnorerCommand(sublime_plugin.WindowCommand):
         apply_all_ignored(self.window)
 
 
+def _win_normalize_path(path):
+    drive, tail = os.path.splitdrive(path)
+
+    if not drive:
+        return path
+
+    return '/{}{}'.format(drive.replace(':', ''), tail.replace('\\', '/'))
+
+
 def _add_extra_excludes(folder, to_merge, excludes_type):
     excludes_name = '{}_exclude_patterns'.format(excludes_type)
     extra_excludes_name = 'extra_{}'.format(excludes_name)
@@ -70,6 +82,9 @@ def _add_extra_excludes(folder, to_merge, excludes_type):
         return should_migrate_folder
 
     exclude_patterns = to_merge.get(excludes_name, [])
+
+    if IS_WINDOWS:
+        exclude_patterns = list(map(_win_normalize_path, exclude_patterns))
 
     to_merge[excludes_name] = exclude_patterns + extra_exclude_patterns
     return True
