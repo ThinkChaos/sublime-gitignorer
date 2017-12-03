@@ -82,9 +82,14 @@ def update_each_folder(inner):
         if project_data is None or 'folders' not in project_data:
             return
 
+        project_root = os.path.dirname(window.project_file_name())
+
         changed = False
         for folder in project_data['folders']:
-            folder_path = os.path.expanduser(folder['path'])
+            folder_path = os.path.normpath(os.path.join(
+                project_root,
+                os.path.expanduser(folder['path'])
+            ))
 
             if not os.path.exists(os.path.join(folder_path, '.git')):
                 continue
